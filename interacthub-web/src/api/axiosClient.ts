@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 //const API_BASE_URL = 'https://localhost:7275/api';
-const API_BASE_URL = 'https://congdanh2703-001-site1.stempurl.com/api';
+const API_BASE_URL = 'http://congdanh2703-001-site1.stempurl.com/api';
 
 
 const axiosClient = axios.create({
