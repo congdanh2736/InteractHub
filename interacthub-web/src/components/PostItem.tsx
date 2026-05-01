@@ -201,7 +201,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                 <img
                     src={post.imageUrl.startsWith('http') ? post.imageUrl : `${getBaseUrl()}${post.imageUrl}`}
                     alt="Post"
-                    className="w-full rounded-lg mb-3 object-cover max-h-96"
+                    className="w-full rounded-lg mb-3 object-cover h-full"
                 />
             )}
 
