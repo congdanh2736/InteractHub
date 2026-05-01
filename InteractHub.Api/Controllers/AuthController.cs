@@ -45,9 +45,8 @@ namespace InteractHub.Api.Controllers
 
             var user = new ApplicationUser
             {
-                UserName = request.Email,
                 Email = request.Email,
-                DisplayName = request.DisplayName,
+                DisplayName = request.DisplayName
             };
 
             var result = await _userManager.CreateAsync(user, request.Password);
