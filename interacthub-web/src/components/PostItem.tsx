@@ -193,7 +193,11 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
             {/* Nội dung bài viết */}
             <p className="text-gray-800 mb-3 whitespace-pre-wrap">{renderContent(post.content)}</p>
             {post.imageUrl && (
-                <img src={post.imageUrl} alt="Post" className="w-full rounded-lg mb-3 object-cover max-h-96" />
+                <img
+                    src={post.imageUrl.startsWith('http') ? post.imageUrl : `https://congdanh2703-001-site1.stempurl.com${post.imageUrl}`}
+                    alt="Post"
+                    className="w-full rounded-lg mb-3 object-cover max-h-96"
+                />
             )}
 
             {/* NÚT THÍCH VÀ BÌNH LUẬN */}
