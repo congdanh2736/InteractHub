@@ -1,20 +1,22 @@
-﻿//using Azure.Storage.Blobs;
-//using Azure.Storage.Blobs.Models;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 
 namespace InteractHub.Api.Services
 {
     public class FileService : IFileService
     {
-        //private readonly BlobServiceClient _blobServiceClient;
-        private readonly IWebHostEnvironment _env;
+        private readonly Cloudinary _cloudinary;
 
-        public FileService(IWebHostEnvironment env)
+        public FileService(IConfiguration config)
         {
-            // lay connectionString
-            //var connectionString = configuration.GetConnectionString("AzureBlobStorage");
-            //_blobServiceClient = new BlobServiceClient(connectionString);
-
-            _env = env;
+            // Lấy thông tin từ appsettings.json
+            var account = new Account(
+                config["Cloudinary:CloudName"],
+                config["Cloudinary:ApiKey"],
+                config["Cloudinary:ApiSecret"]
+            );
+            _cloudinary = new Cloudinary(account);
         }
 
         public async Task<string> UploadFileAsync(IFormFile file, string containerName = "interacthub-images")
@@ -22,44 +24,23 @@ namespace InteractHub.Api.Services
             if (file is null || file.Length == 0)
                 throw new ArgumentException("File cannot be empty.");
 
+            // Mở luồng đọc file
+            using var stream = file.OpenReadStream();
 
-            string webRootPath = _env.WebRootPath;
-            if (string.IsNullOrWhiteSpace(webRootPath))
-                webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-            string uploadsFolder = Path.Combine(webRootPath, containerName);
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
-
-            //var blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName); // tim/tao thu muc tren cloud
-
-            //await blobContainerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
-
-            var fileExtension = Path.GetExtension(file.FileName); // doi ten file de khong bi trung
-            var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-
-            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            //var blobClient = blobContainerClient.GetBlobClient(uniqueFileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))  
+            var uploadParams = new ImageUploadParams
             {
-                //await blobClient.UploadAsync(stream, new BlobUploadOptions
-                //{
-                //    HttpHeaders = new BlobHttpHeaders
-                //    {
-                //        ContentType = file.ContentType
-                //    }
-                //});
+                File = new FileDescription(file.FileName, stream),
+                Folder = containerName // Tạo folder trên Cloudinary để dễ quản lý
+            };
 
-                await file.CopyToAsync(stream);
-            }
+            // Thực hiện upload lên Cloudinary
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-            string fileUrl = $"/{containerName}/{uniqueFileName}";
+            if (uploadResult.Error != null)
+                throw new Exception(uploadResult.Error.Message);
 
-            //return blobClient.Uri.ToString(); // tra ve duong link truc tiep cua tam anh
-
-            return fileUrl;
+            // Trả về đường link an toàn (https) trực tiếp của bức ảnh
+            return uploadResult.SecureUrl.ToString();
         }
     }
 }
