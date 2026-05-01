@@ -64,7 +64,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
     {
-        policy.WithOrigins("https://interact-hub-web.vercel.app")
+        policy.WithOrigins("https://interact-hub-self.vercel.app")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials(); // danh cho signalr
