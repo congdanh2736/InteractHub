@@ -138,6 +138,11 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
         });
     };
 
+    const getBaseUrl = () => {
+        const apiUrl = axiosClient.defaults.baseURL || 'https://congdanh2703-001-site1.stempurl.com/api';
+        return apiUrl.replace('/api', '');
+    };
+
     return (
         <div className="bg-white p-4 rounded-xl shadow-sm mb-4">
             {/* Header bài viết */}
@@ -194,7 +199,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
             <p className="text-gray-800 mb-3 whitespace-pre-wrap">{renderContent(post.content)}</p>
             {post.imageUrl && (
                 <img
-                    src={post.imageUrl.startsWith('http') ? post.imageUrl : `https://congdanh2703-001-site1.stempurl.com${post.imageUrl}`}
+                    src={post.imageUrl.startsWith('http') ? post.imageUrl : `${getBaseUrl()}${post.imageUrl}`}
                     alt="Post"
                     className="w-full rounded-lg mb-3 object-cover max-h-96"
                 />
