@@ -10,6 +10,7 @@ import { AuthProvider } from './context/AuthContext';
 import Friend from './pages/Friend';
 import UserProfile from './pages/UserProfile';
 import HashtagPage from './pages/HashtagPage';
+import AdminPage from './pages/AdminPage';
 
 function App() {
     return (
@@ -69,6 +70,15 @@ function App() {
 
                     {/* neu go duong link khac thi se cho ve trang login*/}
                     <Route path="*" element={<Navigate to="/login" replace />} />
+
+                    <Route
+                        path="/admin"
+                        element={
+                            <ProtectedRoute>
+                                <AdminPage />
+                            </ProtectedRoute>
+                        }
+                    />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>
