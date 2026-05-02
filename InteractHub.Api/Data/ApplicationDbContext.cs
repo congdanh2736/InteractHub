@@ -34,7 +34,7 @@ namespace InteractHub.Api.Data
                 .HasOne(c => c.Post) // lay property Post trong class Comment
                 .WithMany(p => p.Comments) // lay property collection trong class Post
                 .HasForeignKey(c => c.PostId) // chi ro cot khoa ngoai trong bang Comment là PostId
-                .OnDelete(DeleteBehavior.NoAction); // khi xoa Post thi database khong tu dong xoa Comment
+                .OnDelete(DeleteBehavior.NoAction); 
 
             builder.Entity<Comment>()
                 .HasOne(c => c.User)

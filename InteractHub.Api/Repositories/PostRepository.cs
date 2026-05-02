@@ -47,10 +47,25 @@ namespace InteractHub.Api.Repositories
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var post = await _context.Posts.FindAsync(id);
+            var post = await _context.Posts
+                .Include(p => p.Comments)
+                .Include(p => p.Likes)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (post == null) return false;
 
+            if (post.Comments.Any())
+            {
+                _context.Comments.RemoveRange(post.Comments);
+            }
+
+            if (post.Likes.Any())
+            {
+                _context.Likes.RemoveRange(post.Likes);
+            }
+
             _context.Posts.Remove(post);
+
             await _context.SaveChangesAsync();
             return true;
         }
