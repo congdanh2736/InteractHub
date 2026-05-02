@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ThumbsUp, MessageCircle, MoreHorizontal, Flag, Send } from 'lucide-react';
+import { ThumbsUp, MessageCircle, MoreHorizontal, Flag, Send, Trash2} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import axiosClient from '../api/axiosClient';
@@ -143,6 +143,23 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
         return apiUrl.replace('/api', '');
     };
 
+    const handleDeletePost = async () => {
+        if (window.confirm("Bạn có chắc chắn xóa bài viết này không?")) {
+            try {
+                await axiosClient.delete(`/Posts/${post.id}`);
+                toast.success("Xoa bai viet thanh cong");
+
+                if (onPostUpdated) {
+                    onPostUpdated();
+                }
+            } catch (error) {
+                console.error("Loi xoa bai viet: ", error);
+                toast.error("Loi khi xoa bai viet");
+            }
+        }
+        setShowMenu(false);
+    }
+
     return (
         <div className="bg-white p-4 rounded-xl shadow-sm mb-4">
             {/* Header bài viết */}
@@ -180,6 +197,18 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
 
                     {showMenu && (
                         <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10 overflow-hidden">
+
+                            {/* Chỉ hiển thị nút Xóa nếu người dùng hiện tại là chủ bài viết */}
+                            {user?.id === post.userId && (
+                                <button
+                                    onClick={handleDeletePost}
+                                    className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 flex items-center transition border-b border-gray-100"
+                                >
+                                    <Trash2 size={16} className="mr-2" />
+                                    Xóa bài viết
+                                </button>
+                            )}
+
                             <button
                                 onClick={() => {
                                     setShowReportModal(true);
