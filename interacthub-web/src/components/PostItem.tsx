@@ -161,6 +161,8 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
         setShowMenu(false);
     }
 
+    const isAdmin = user?.roles?.includes('Admin') || user?.roles === 'Admin';
+
     return (
         <div className="bg-white p-4 rounded-xl shadow-sm mb-4">
             {/* Header bài viết */}
@@ -200,7 +202,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                         <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10 overflow-hidden">
 
                             {/* Chỉ hiển thị nút Xóa nếu người dùng hiện tại là chủ bài viết */}
-                            {user?.id === post.userId && (
+                            {(user?.id === post.userId || isAdmin) && (
                                 <button
                                     onClick={handleDeletePost}
                                     className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 flex items-center transition border-b border-gray-100"
