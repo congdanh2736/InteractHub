@@ -209,16 +209,19 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                                 </button>
                             )}
 
-                            <button
-                                onClick={() => {
-                                    setShowReportModal(true);
-                                    setShowMenu(false);
-                                }}
-                                className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 flex items-center transition"
-                            >
-                                <Flag size={16} className="mr-2" />
-                                Báo cáo
-                            </button>
+                            {user?.id != post.userId && (
+                                <button
+                                    onClick={() => {
+                                        setShowReportModal(true);
+                                        setShowMenu(false);
+                                    }}
+                                    className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 flex items-center transition"
+                                >
+                                    <Flag size={16} className="mr-2" />
+                                    Báo cáo
+                                </button>
+                            )}
+                            
                         </div>
                     )}
                 </div>
