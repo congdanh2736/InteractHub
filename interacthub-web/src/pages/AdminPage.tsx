@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, UserPlus, ShieldAlert, Users, AlertTriangle } from 'lucide-react';
+import { Trash2, UserPlus, ShieldAlert, Users, AlertTriangle, Home } from 'lucide-react'; // Thêm icon Home
 import axiosClient from '../api/axiosClient';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
@@ -28,17 +28,19 @@ export default function AdminPage() {
     const [usersList, setUsersList] = useState<UserData[]>([]);
     const [reportsList, setReportsList] = useState<ReportData[]>([]);
 
-    // Modal thêm user
+    // Modal thêm user - Thêm trường role
     const [showAddUserModal, setShowAddUserModal] = useState(false);
-    const [newUser, setNewUser] = useState({ email: '', password: '', displayName: '', userName: '' });
+    const [newUser, setNewUser] = useState({ email: '', password: '', displayName: '', userName: '', role: 'User' });
 
-    // Kiểm tra role: Nếu backend hỗ trợ lưu Role trong Token và bạn lấy ra được, hãy bật cái này lên
-    /* useEffect(() => {
+    useEffect(() => {
+        // Nếu user hiện tại không có quyền Admin, đưa về trang chủ (bạn có thể bỏ comment nếu cần bảo mật phía FE)
+        /*
         if (user && !user.roles?.includes('Admin')) {
             toast.error("Bạn không có quyền truy cập trang này!");
             navigate('/');
         }
-    }, [user]); */
+        */
+    }, [user]);
 
     useEffect(() => {
         if (activeTab === 'users') fetchUsers();
@@ -47,38 +49,32 @@ export default function AdminPage() {
 
     const fetchUsers = async () => {
         try {
-            // Tạm thời gọi API tìm kiếm với keyword trắng vì backend chưa có API Get All Users
-            const response = await axiosClient.get('/User'); 
+            const response = await axiosClient.get('/User');
             setUsersList(response.data);
-
-            // Ghi chú: Để hoàn hảo, bạn cần viết thêm hàm [HttpGet] GetAllUsers() ở UserController backend
         } catch (error) {
             console.error(error);
-            toast.error("Không thể tải danh sách người dùng. Backend cần hỗ trợ API GetAllUsers.");
+            toast.error("Không thể tải danh sách người dùng.");
         }
     };
 
     const fetchReports = async () => {
         try {
-            // Gọi đúng endpoint lấy Reports theo PostReportController
             const response = await axiosClient.get('/PostReports');
             setReportsList(response.data);
         } catch (error) {
             console.error(error);
-            toast.error("Không thể tải danh sách báo cáo. Đảm bảo tài khoản này là Admin.");
+            toast.error("Không thể tải danh sách báo cáo.");
         }
     };
 
     const handleDeleteUser = async (userId: string) => {
         if (window.confirm("Bạn có chắc muốn xóa người dùng này?")) {
             try {
-                // Backend hiện tại chưa có API xóa user ở UserController
-                // Bạn cần thêm [HttpDelete("{id}")] DeleteUser() vào backend
                 await axiosClient.delete(`/User/${userId}`);
                 toast.success("Đã xóa người dùng thành công");
                 fetchUsers();
             } catch (error) {
-                toast.error("Lỗi khi xóa người dùng hoặc chưa có API bên backend.");
+                toast.error("Lỗi khi xóa người dùng.");
             }
         }
     };
@@ -89,11 +85,11 @@ export default function AdminPage() {
             return;
         }
         try {
-            // Gọi đúng endpoint đăng ký theo AuthController
+            // Chú ý: Backend hiện tại của bạn cần hỗ trợ nhận tham số "Role" trong body của /Auth/register
             await axiosClient.post('/Auth/register', newUser);
             toast.success("Tạo người dùng thành công");
             setShowAddUserModal(false);
-            setNewUser({ email: '', password: '', displayName: '', userName: '' });
+            setNewUser({ email: '', password: '', displayName: '', userName: '', role: 'User' });
             fetchUsers();
         } catch (error: any) {
             console.error(error);
@@ -104,10 +100,23 @@ export default function AdminPage() {
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-6xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
-                    <ShieldAlert className="mr-3 text-blue-600" size={32} />
-                    Bảng Điều Khiển Admin
-                </h1>
+
+                {/* Header Admin Page */}
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+                        <ShieldAlert className="mr-3 text-blue-600" size={32} />
+                        Bảng Điều Khiển Admin
+                    </h1>
+
+                    {/* NÚT VỀ TRANG CHỦ (Nhiệm vụ 1) */}
+                    <button
+                        onClick={() => navigate('/')}
+                        className="flex items-center px-4 py-2 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg shadow-sm hover:bg-gray-50 transition"
+                    >
+                        <Home size={18} className="mr-2 text-blue-600" />
+                        Về Trang Chủ
+                    </button>
+                </div>
 
                 {/* Tabs */}
                 <div className="flex space-x-4 mb-6 border-b pb-2">
@@ -153,8 +162,18 @@ export default function AdminPage() {
                                 <tbody>
                                     {usersList.map((u) => (
                                         <tr key={u.id} className="border-b hover:bg-gray-50">
-                                            <td className="p-3 text-sm text-gray-500 truncate max-w-[100px]">{u.id}</td>
-                                            <td className="p-3 font-medium text-gray-800">{u.displayName || u.userName}</td>
+                                            <td className="p-3 text-sm text-gray-500 truncate max-w-[100px]" title={u.id}>
+                                                {u.id.substring(0, 8)}...
+                                            </td>
+                                            <td className="p-3">
+                                                {/* CLICK VÀO TÊN CHUYỂN HƯỚNG SANG PROFILE (Nhiệm vụ 3) */}
+                                                <span
+                                                    onClick={() => navigate(`/profile/${u.id}`)}
+                                                    className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition"
+                                                >
+                                                    {u.displayName || u.userName}
+                                                </span>
+                                            </td>
                                             <td className="p-3 text-gray-600">{u.email}</td>
                                             <td className="p-3 text-center">
                                                 <button
@@ -195,7 +214,7 @@ export default function AdminPage() {
                                         </p>
                                     </div>
                                     <button
-                                        onClick={() => navigate(`/`)} // Có thể đổi lại link đi tới bài viết chi tiết
+                                        onClick={() => navigate(`/`)} // Có thể thiết lập chuyển hướng cụ thể hơn nếu cần
                                         className="text-sm px-3 py-1.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
                                     >
                                         Xem bài viết
@@ -235,6 +254,16 @@ export default function AdminPage() {
                                 value={newUser.password}
                                 onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                             />
+
+                            {/* CHỌN QUYỀN TRUY CẬP (Nhiệm vụ 2) */}
+                            <select
+                                className="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-200 bg-white"
+                                value={newUser.role}
+                                onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                            >
+                                <option value="User">Người dùng thường (User)</option>
+                                <option value="Admin">Quản trị viên (Admin)</option>
+                            </select>
                         </div>
 
                         <div className="flex justify-end space-x-3">
