@@ -1,15 +1,19 @@
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Home, Users, Search, Bell, Check, Clock, ShieldAlert } from 'lucide-react'; // Thêm ShieldAlert
+import { LogOut, Home, Users, Search, Bell, Check, Clock, ShieldAlert, X } from 'lucide-react'; // Thêm ShieldAlert
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { useDebounce } from '../hooks/useDebounce';
 import axiosClient from '../api/axiosClient';
 import * as signalR from '@microsoft/signalr';
+import * as React from 'react';
+import { toast } from 'react-toastify';
+
 
 export interface NotificationType {
     id: number;
     message: string;
     type: string;
+    senderId?: string;
     isRead: boolean;
     createdAt: string;
 }
@@ -116,6 +120,21 @@ export default function Navbar() {
         fetchSearchResults();
     }, [debouncedSearchTerm]);
 
+    const handleRespondFriendRequest = async (e: React.MouseEvent, notifId: number, requesterId: string, status: 'Accepted' | 'Declined') => {
+        e.stopPropagation(); // Ngăn sự kiện click đánh dấu đã đọc
+        try {
+            await axiosClient.put('/Friends/respond', { requesterId, status });
+            toast.success(status === 'Accepted' ? "Đã chấp nhận kết bạn!" : "Đã từ chối kết bạn!");
+
+            // Đánh dấu thông báo là đã đọc
+            handleMarkAsRead(notifId);
+
+            // Có thể ẩn thông báo này hoặc đổi text (ở đây mình đánh dấu đã đọc)
+        } catch (error) {
+            toast.error("Lỗi xử lý yêu cầu kết bạn!");
+        }
+    };
+
     return (
         <nav className="bg-white shadow-md sticky top-0 z-50">
             <div className="max-w-6xl mx-auto px-4">
@@ -181,7 +200,6 @@ export default function Navbar() {
                             <button
                                 onClick={() => setShowNotifDropdown(!showNotifDropdown)}
                                 className="p-2 text-gray-600 hover:bg-gray-100 rounded-full relative"
-                                title="Thông báo"
                             >
                                 <Bell size={22} />
                                 {unreadCount > 0 && (
@@ -191,7 +209,6 @@ export default function Navbar() {
                                 )}
                             </button>
 
-                            {/* DROPDOWN THÔNG BÁO */}
                             {showNotifDropdown && (
                                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 max-h-[400px] overflow-y-auto z-50">
                                     <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 sticky top-0 z-10">
@@ -208,22 +225,42 @@ export default function Navbar() {
                                                 <div
                                                     key={notif.id}
                                                     onClick={() => handleMarkAsRead(notif.id)}
-                                                    className={`p-4 border-b border-gray-50 cursor-pointer flex items-start gap-3 transition ${notif.isRead ? 'bg-white opacity-60' : 'bg-blue-50/30'}`}
+                                                    className={`p-4 border-b border-gray-50 cursor-pointer flex flex-col gap-2 transition ${notif.isRead ? 'bg-white opacity-60' : 'bg-blue-50/30'}`}
                                                 >
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${notif.isRead ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 text-blue-600'}`}>
-                                                        <Bell size={18} />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className={`text-sm ${notif.isRead ? 'text-gray-600' : 'text-gray-800 font-medium'}`}>
-                                                            {notif.message}
-                                                        </p>
-                                                        <div className="flex items-center text-xs text-gray-400 mt-1">
-                                                            <Clock size={12} className="mr-1" />
-                                                            {new Date(notif.createdAt).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                                                    <div className="flex items-start gap-3">
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${notif.isRead ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 text-blue-600'}`}>
+                                                            <Bell size={18} />
                                                         </div>
+                                                        <div className="flex-1">
+                                                            <p className={`text-sm ${notif.isRead ? 'text-gray-600' : 'text-gray-800 font-medium'}`}>
+                                                                {notif.message}
+                                                            </p>
+                                                            <div className="flex items-center text-xs text-gray-400 mt-1">
+                                                                <Clock size={12} className="mr-1" />
+                                                                {new Date(notif.createdAt).toLocaleString('vi-VN')}
+                                                            </div>
+                                                        </div>
+                                                        {!notif.isRead && (
+                                                            <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                                                        )}
                                                     </div>
-                                                    {!notif.isRead && (
-                                                        <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+
+                                                    {/* NẾU LÀ THÔNG BÁO KẾT BẠN THÌ HIỆN NÚT CHẤP NHẬN/TỪ CHỐI */}
+                                                    {notif.type === 'FriendRequest' && notif.senderId && !notif.isRead && (
+                                                        <div className="flex gap-2 ml-13 mt-2 pl-[52px]">
+                                                            <button
+                                                                onClick={(e) => handleRespondFriendRequest(e, notif.id, notif.senderId!, 'Accepted')}
+                                                                className="flex-1 bg-blue-600 text-white text-xs py-1.5 rounded-md flex justify-center items-center hover:bg-blue-700"
+                                                            >
+                                                                <Check size={14} className="mr-1" /> Đồng ý
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => handleRespondFriendRequest(e, notif.id, notif.senderId!, 'Declined')}
+                                                                className="flex-1 bg-gray-200 text-gray-700 text-xs py-1.5 rounded-md flex justify-center items-center hover:bg-gray-300"
+                                                            >
+                                                                <X size={14} className="mr-1" /> Từ chối
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </div>
                                             ))

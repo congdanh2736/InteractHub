@@ -15,12 +15,22 @@ namespace InteractHub.Api.Services
         private readonly IPostRepository _postRepository;
         private readonly ILikeRepository _likeRepository;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IUserRepository _userRepository;
+        private readonly INotificationRepository _notificationRepository;
 
-        public LikeService(IPostRepository postRepository, ILikeRepository likeRepository, IHubContext<NotificationHub> hubContext)
+        public LikeService(
+            IPostRepository postRepository,
+            ILikeRepository likeRepository,
+            IHubContext<NotificationHub> hubContext,
+            IUserRepository userRepository,
+            INotificationRepository notificationRepository
+            )
         {
             _postRepository = postRepository;
             _hubContext = hubContext;
             _likeRepository = likeRepository;
+            _userRepository = userRepository;
+            _notificationRepository = notificationRepository;
         }
 
         public async Task<object?> ToggleLikeAsync(ToggleLikeRequest request, string userId)
@@ -57,6 +67,29 @@ namespace InteractHub.Api.Services
             // Gửi cho hub thông báo rằng có người đã like
             await _hubContext.Clients.All.SendAsync("ReceiveLikeUpdate", request.PostId);
             //~~~~~~~~
+
+            var liker = await _userRepository.FindUserAsync(userId);
+            if (postExists.UserId != userId) // Không tự thông báo cho chính mình
+            {
+                var notification = new Notification
+                {
+                    UserId = postExists.UserId, // Chủ bài viết nhận thông báo
+                    SenderId = userId, // Người thả tim
+                    Message = $"{liker?.DisplayName} đã thích bài viết của bạn.",
+                    Type = "Like",
+                    CreatedAt = DateTime.UtcNow,
+                };
+                await _notificationRepository.AddNotificationAsync(notification);
+
+                await _hubContext.Clients.User(postExists.UserId).SendAsync("ReceiveNotification", new
+                {
+                    notification.Id,
+                    notification.Message,
+                    notification.Type,
+                    notification.SenderId,
+                    notification.CreatedAt,
+                });
+            }
 
             return new
             {

@@ -23,6 +23,7 @@ namespace InteractHub.Api.Services
                     Id = n.Id,
                     Message = n.Message,
                     Type = n.Type,
+                    SenderId = n.SenderId,
                     IsRead = n.IsRead,
                     CreatedAt = n.CreatedAt
                 })

@@ -14,6 +14,8 @@ namespace InteractHub.Api.Entities
 
         public string Message { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty; // 1. like, 2.comment, 3.friend request
+
+        public string? SenderId { get; set; }
         public bool IsRead { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

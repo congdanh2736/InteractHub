@@ -1,7 +1,9 @@
 ﻿using InteractHub.Api.Data;
 using InteractHub.Api.Dtos.Friends;
 using InteractHub.Api.Entities;
+using InteractHub.Api.Hubs;
 using InteractHub.Api.Repositories;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace InteractHub.Api.Services
@@ -10,10 +12,14 @@ namespace InteractHub.Api.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IFriendshipRepository _friendshipRepository;
+        private readonly INotificationRepository _notificationRepository;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         public FriendService(
             IUserRepository userRepository,
-            IFriendshipRepository friendshipRepository)
+            IFriendshipRepository friendshipRepository,
+            INotificationRepository notificatinRepository,
+            IHubContext<NotificationHub> hubContext)
         {
             _friendshipRepository = friendshipRepository;
             _userRepository = userRepository;
@@ -43,6 +49,28 @@ namespace InteractHub.Api.Services
             };
 
             await _friendshipRepository.AddAsync(friendship);
+
+            var requester = await _userRepository.FindUserAsync(requesterId);
+
+            var notification = new Notification
+            {
+                UserId = receiverId, // Người nhận lời mời
+                SenderId = requesterId, // Người gửi lời mời
+                Message = $"{requester?.DisplayName} đã gửi cho bạn một lời mời kết bạn.",
+                Type = "FriendRequest",
+                CreatedAt = DateTime.UtcNow,
+            };
+            await _notificationRepository.AddNotificationAsync(notification);
+
+            // Bắn signalR cho người nhận (Yêu cầu tiêm _hubContext)
+            await _hubContext.Clients.User(receiverId).SendAsync("ReceiveNotification", new
+            {
+                notification.Id,
+                notification.Message,
+                notification.Type,
+                notification.SenderId,
+                notification.CreatedAt,
+            });
 
             return new
             {
