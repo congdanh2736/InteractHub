@@ -72,7 +72,6 @@ namespace InteractHub.Api.Services
         {
             var post = await _postRepository.GetByIdAsync(id);
 
-            // Nếu không tìm thấy bài viết, HOẶC (không phải chủ bài viết VÀ không phải Admin) thì từ chối
             if (post == null || (post.UserId != userId && !isAdmin)) return false;
 
             await _postRepository.DeleteAsync(id);
