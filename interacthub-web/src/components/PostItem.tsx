@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { ThumbsUp, MessageCircle, MoreHorizontal, Flag, Send, Trash2 } from 'lucide-react';
+import { ThumbsUp, MessageCircle, MoreHorizontal, Flag, Send, Trash2} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import axiosClient from '../api/axiosClient';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Thêm import chuyển hướng
 import * as React from 'react';
 
 export interface CommentType {
     id: number | string;
     userId: string;
     content: string;
-    userDisplayName?: string;
+    userDisplayName?: string; // Thêm trường tên người dùng
 }
 
 export interface PostType {
@@ -33,10 +33,7 @@ interface PostItemProps {
 
 export default function PostItem({ post: initialPost, onPostUpdated }: PostItemProps) {
     const { user } = useAuth();
-    const navigate = useNavigate();
-
-    // KIỂM TRA QUYỀN ADMIN TỪ USER HIỆN TẠI
-    const isAdmin = user?.roles?.includes('Admin') || user?.roles === 'Admin';
+    const navigate = useNavigate(); // Khởi tạo công cụ chuyển hướng
 
     const [post, setPost] = useState<PostType>(initialPost);
 
@@ -54,22 +51,6 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
         } catch (error) {
             console.error("Không thể tải lại bài viết: ", error);
         }
-    };
-
-    const handleDeletePost = async () => {
-        if (window.confirm("Bạn có chắc chắn muốn xóa bài viết này không?")) {
-            try {
-                await axiosClient.delete(`/Posts/${post.id}`);
-                toast.success("Xóa bài viết thành công!");
-                if (onPostUpdated) {
-                    onPostUpdated();
-                }
-            } catch (error) {
-                console.error("Lỗi xóa bài viết: ", error);
-                toast.error("Lỗi khi xóa bài viết!");
-            }
-        }
-        setShowMenu(false);
     };
 
     const handleReportPost = async () => {
@@ -124,7 +105,9 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
         }
     };
 
+    // Hàm tiện ích: Khi click vào thông tin người dùng sẽ đưa tới trang của họ
     const goToProfile = (userId: string) => {
+        // Nếu là mình thì về trang cá nhân của mình, ngược lại sang xem người khác
         if (userId === user?.id) {
             navigate('/profile');
         } else {
@@ -134,6 +117,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
 
     const renderContent = (text: string) => {
         if (!text) return null;
+        // Tách chuỗi dựa theo dấu #
         const parts = text.split(/(#\w+)/g);
         return parts.map((part, index) => {
             if (part.startsWith('#')) {
@@ -142,7 +126,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                     <span
                         key={index}
                         onClick={(e) => {
-                            e.stopPropagation();
+                            e.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài
                             navigate(`/hashtag/${tagWord}`);
                         }}
                         className="text-blue-600 hover:underline cursor-pointer font-medium"
@@ -151,7 +135,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                     </span>
                 );
             }
-            return <span key={index}>{part}</span>;
+            return <span key={index}>{part}</span>; // Từ bình thường (Không phải hashtag)
         });
     };
 
@@ -160,10 +144,29 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
         return apiUrl.replace('/api', '');
     };
 
+    const handleDeletePost = async () => {
+        if (window.confirm("Bạn có chắc chắn xóa bài viết này không?")) {
+            try {
+                await axiosClient.delete(`/Posts/${post.id}`);
+                toast.success("Xoa bai viet thanh cong");
+
+                if (onPostUpdated) {
+                    onPostUpdated();
+                }
+            } catch (error) {
+                console.error("Loi xoa bai viet: ", error);
+                toast.error("Loi khi xoa bai viet");
+            }
+        }
+        setShowMenu(false);
+    }
+
     return (
         <div className="bg-white p-4 rounded-xl shadow-sm mb-4">
+            {/* Header bài viết */}
             <div className="flex items-center mb-3 justify-between">
                 <div className="flex items-center">
+                    {/* Bấm vào avatar người đăng */}
                     <div
                         onClick={() => goToProfile(post.userId)}
                         className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold mr-3 flex-shrink-0 cursor-pointer hover:bg-blue-200 transition"
@@ -171,6 +174,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                         {post.userDisplayName ? post.userDisplayName.substring(0, 1).toUpperCase() : 'U'}
                     </div>
                     <div>
+                        {/* Bấm vào tên người đăng */}
                         <h3
                             onClick={() => goToProfile(post.userId)}
                             className="font-bold text-gray-800 cursor-pointer hover:text-blue-600 hover:underline transition"
@@ -183,6 +187,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                     </div>
                 </div>
 
+                {/* NÚT MENU (3 CHẤM) */}
                 <div className="relative">
                     <button
                         onClick={() => setShowMenu(!showMenu)}
@@ -194,8 +199,8 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                     {showMenu && (
                         <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10 overflow-hidden">
 
-                            {/* NẾU LÀ CHỦ BÀI VIẾT HOẶC LÀ ADMIN THÌ SẼ CÓ QUYỀN XÓA BÀI */}
-                            {(user?.id === post.userId || isAdmin) && (
+                            {/* Chỉ hiển thị nút Xóa nếu người dùng hiện tại là chủ bài viết */}
+                            {user?.id === post.userId && (
                                 <button
                                     onClick={handleDeletePost}
                                     className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 flex items-center transition border-b border-gray-100"
@@ -205,21 +210,25 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                                 </button>
                             )}
 
-                            <button
-                                onClick={() => {
-                                    setShowReportModal(true);
-                                    setShowMenu(false);
-                                }}
-                                className={`w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center transition ${(user?.id === post.userId || isAdmin) ? 'text-gray-700' : 'text-red-600 hover:bg-red-50'}`}
-                            >
-                                <Flag size={16} className="mr-2" />
-                                Báo cáo
-                            </button>
+                            {user?.id != post.userId && (
+                                <button
+                                    onClick={() => {
+                                        setShowReportModal(true);
+                                        setShowMenu(false);
+                                    }}
+                                    className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 flex items-center transition"
+                                >
+                                    <Flag size={16} className="mr-2" />
+                                    Báo cáo
+                                </button>
+                            )}
+                            
                         </div>
                     )}
                 </div>
             </div>
 
+            {/* Nội dung bài viết */}
             <p className="text-gray-800 mb-3 whitespace-pre-wrap">{renderContent(post.content)}</p>
             {post.imageUrl && (
                 <img
@@ -229,6 +238,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                 />
             )}
 
+            {/* NÚT THÍCH VÀ BÌNH LUẬN */}
             <div className="border-t border-b py-1 my-3 flex text-gray-500 font-medium text-sm">
                 <button
                     onClick={handleLike}
@@ -244,6 +254,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                 </button>
             </div>
 
+            {/* KHU VỰC BÌNH LUẬN */}
             {isCommentOpen && (
                 <div className="mt-3">
                     <div className="flex space-x-2 mb-4">
@@ -269,6 +280,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                         <div className="space-y-3">
                             {post.comments.map((cmt: CommentType) => (
                                 <div key={cmt.id} className="flex space-x-2">
+                                    {/* Bấm vào avatar người bình luận */}
                                     <div
                                         onClick={() => goToProfile(cmt.userId)}
                                         className="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 cursor-pointer hover:bg-gray-300 transition"
@@ -276,6 +288,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
                                         {cmt.userDisplayName ? cmt.userDisplayName.substring(0, 1).toUpperCase() : 'U'}
                                     </div>
                                     <div className="bg-gray-100 px-3 py-2 rounded-2xl text-sm max-w-[85%]">
+                                        {/* Bấm vào tên người bình luận */}
                                         <span
                                             onClick={() => goToProfile(cmt.userId)}
                                             className="font-bold block text-gray-800 break-words cursor-pointer hover:text-blue-600 hover:underline transition"
@@ -293,6 +306,7 @@ export default function PostItem({ post: initialPost, onPostUpdated }: PostItemP
 
             {showReportModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    {/* ... (Code của Modal Report giữ nguyên) ... */}
                     <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Báo cáo bài viết</h3>
                         <p className="text-gray-600 text-sm mb-4">Bạn thấy bài viết này có vấn đề gì?</p>
