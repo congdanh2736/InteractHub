@@ -76,16 +76,20 @@ namespace InteractHub.Api.Controllers
         public async Task<IActionResult> DeletePost([FromRoute] int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userId)) 
+            if (string.IsNullOrWhiteSpace(userId))
                 return Unauthorized();
 
-            var isDeleted = await _postService.DeletePostAsync(id, userId);
-            if (!isDeleted) 
-                return StatusCode(StatusCodes.Status403Forbidden, "Post not found or you are not the author.");
+            bool isAdmin = User.IsInRole("Admin");
 
-            return Ok(new { 
-                message = "Post deleted successfully.", 
-                postId = id 
+            var isDeleted = await _postService.DeletePostAsync(id, userId, isAdmin);
+
+            if (!isDeleted)
+                return StatusCode(StatusCodes.Status403Forbidden, "Post not found or you do not have permission.");
+
+            return Ok(new
+            {
+                message = "Post deleted successfully.",
+                postId = id
             });
         }
 

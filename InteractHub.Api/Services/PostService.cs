@@ -68,10 +68,12 @@ namespace InteractHub.Api.Services
             return new { message = "Post updated successfully", post.Id, post.Content, post.ImageUrl, post.UserId, post.CreatedAt };
         }
 
-        public async Task<bool> DeletePostAsync(int id, string userId)
+        public async Task<bool> DeletePostAsync(int id, string userId, bool isAdmin = false)
         {
             var post = await _postRepository.GetByIdAsync(id);
-            if (post == null || post.UserId != userId) return false;
+
+            // Nếu không tìm thấy bài viết, HOẶC (không phải chủ bài viết VÀ không phải Admin) thì từ chối
+            if (post == null || (post.UserId != userId && !isAdmin)) return false;
 
             await _postRepository.DeleteAsync(id);
             return true;
