@@ -45,6 +45,7 @@ namespace InteractHub.Api.Controllers
 
             var user = new ApplicationUser
             {
+                UserName = request.Email,
                 Email = request.Email,
                 DisplayName = request.DisplayName
             };
