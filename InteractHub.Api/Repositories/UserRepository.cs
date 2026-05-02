@@ -35,5 +35,28 @@ namespace InteractHub.Api.Repositories
                 })
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<UserDtos>> GetAllUsersAsync()
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .Select(u => new UserDtos
+                {
+                    Id = u.Id,
+                    DisplayName = u.DisplayName ?? u.UserName!,
+                    Email = u.Email!
+                })
+                .ToListAsync();
+        }
+
+        public async Task<bool> DeleteUserAsync(string id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null) return false;
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

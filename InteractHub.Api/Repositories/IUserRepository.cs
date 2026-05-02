@@ -7,5 +7,8 @@ namespace InteractHub.Api.Repositories
     {
         Task<ApplicationUser?> FindUserAsync(string id);
         Task<IEnumerable<UserDtos>> SearchUsersAsync(string searchTerm);
+
+        Task<IEnumerable<UserDtos>> GetAllUsersAsync();
+        Task<bool> DeleteUserAsync(string id);
     }
 }

@@ -73,5 +73,26 @@ namespace InteractHub.Api.Controllers
             var users = await _userService.SearchUsersAsync(q);
             return Ok(users);
         }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _userService.GetAllUsersAsync();
+            return Ok(users);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUser([FromRoute] string id)
+        {
+            var result = await _userService.DeleteUserAsync(id);
+            if (!result)
+            {
+                return NotFound($"User with id = {id} was not found.");
+            }
+
+            return Ok(new { message = "User deleted successfully." });
+        }
     }
 }

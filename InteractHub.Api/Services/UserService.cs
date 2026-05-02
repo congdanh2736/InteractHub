@@ -58,5 +58,15 @@ namespace InteractHub.Api.Services
 
             return await _userRepository.SearchUsersAsync(searchTerm);
         }
+
+        public async Task<IEnumerable<object>> GetAllUsersAsync()
+        {
+            return await _userRepository.GetAllUsersAsync();
+        }
+
+        public async Task<bool> DeleteUserAsync(string id)
+        {
+            return await _userRepository.DeleteUserAsync(id);
+        }
     }
 }
