@@ -6,6 +6,7 @@ interface User {
     id: string;
     name: string;
     email: string;
+    roles: string | string[];
 }
 
 interface AuthContextType {
@@ -30,9 +31,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const id = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || payload.sub;
             const name = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || payload.DisplayName;
             const email = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || payload.email;
+            const roles = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload.role || [];
 
             if (id)
-                setUser({ id, name, email });
+                setUser({ id, name, email, roles });
 
         } catch (error) {
             console.error("Token không hợp lệ", error);

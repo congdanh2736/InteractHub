@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Home, Users, Search, Bell, Check, Clock } from 'lucide-react';
+import { LogOut, Home, Users, Search, Bell, Check, Clock, ShieldAlert } from 'lucide-react'; // Thêm ShieldAlert
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { useDebounce } from '../hooks/useDebounce';
@@ -22,7 +22,7 @@ export interface SearchUserType {
 
 export default function Navbar() {
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { logout, user } = useAuth(); // Lấy user từ AuthContext ra
 
     // Các state tìm kiếm
     const [searchTerm, setSearchTerm] = useState('');
@@ -36,8 +36,10 @@ export default function Navbar() {
     const [showNotifDropdown, setShowNotifDropdown] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
 
-    // Xử lý ref để click ra ngoài thì đóng menu thông báo
     const notifRef = useRef<HTMLDivElement>(null);
+
+    // Kiểm tra xem user hiện tại có phải là Admin không
+    const isAdmin = user?.roles?.includes('Admin') || user?.roles === 'Admin';
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -61,7 +63,7 @@ export default function Navbar() {
         }
     };
 
-    // 2. LẮNG NGHE THÔNG BÁO TỪ SIGNALR VÀ XÓA TOAST
+    // 2. LẮNG NGHE THÔNG BÁO TỪ SIGNALR
     useEffect(() => {
         fetchNotifications();
 
@@ -75,17 +77,14 @@ export default function Navbar() {
 
         connection.start().catch(err => console.log("Loi ket noi signalR", err));
 
-        // Nhận thông báo mới từ server và cập nhật vào danh sách Notification Area
         connection.on("ReceiveNotification", (notification: NotificationType) => {
             setNotifications(prev => [notification, ...prev]);
             setUnreadCount(prev => prev + 1);
-            // LƯU Ý: KHÔNG DÙNG toast.success NỮA!
         });
 
         return () => { connection.stop(); };
     }, []);
 
-    // Đánh dấu đã đọc
     const handleMarkAsRead = async (id: number) => {
         try {
             await axiosClient.put(`/Notifications/${id}/read`);
@@ -96,7 +95,6 @@ export default function Navbar() {
         }
     };
 
-    // Tìm kiếm
     useEffect(() => {
         const fetchSearchResults = async () => {
             if (debouncedSearchTerm) {
@@ -147,7 +145,7 @@ export default function Navbar() {
                                     ) : searchResults.length > 0 ? (
                                         <ul>
                                             {searchResults.map((u: SearchUserType) => (
-                                                <li key={u.id} className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center border-b border-gray-50" onClick={() => { navigate(`/profile/${u.id}`); setShowDropdown(false); setSearchTerm(''); }}>
+                                                <li key={u.id} className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center border-b border-gray-50" onClick={() => { navigate(`/profile/${u.id}`); setShowDropdown(false); }}>
                                                     <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold mr-3">{u.displayName?.charAt(0).toUpperCase()}</div>
                                                     <div><div className="font-semibold">{u.displayName}</div></div>
                                                 </li>
@@ -163,6 +161,13 @@ export default function Navbar() {
 
                     {/* ICON MENU */}
                     <div className="flex space-x-4 items-center">
+                        {/* NÚT ADMIN: Chỉ hiển thị khi là tài khoản admin */}
+                        {isAdmin && (
+                            <button onClick={() => navigate('/admin')} className="p-2 text-blue-600 hover:bg-blue-50 rounded-full" title="Bảng quản trị Admin">
+                                <ShieldAlert size={22} />
+                            </button>
+                        )}
+
                         <button onClick={() => navigate('/')} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full" title="Trang chủ">
                             <Home size={22} />
                         </button>
@@ -203,7 +208,7 @@ export default function Navbar() {
                                                 <div
                                                     key={notif.id}
                                                     onClick={() => handleMarkAsRead(notif.id)}
-                                                    className={`p-4 border-b border-gray-50 cursor-pointer flex items-start gap-3 transition ${notif.isRead ? 'bg-white opacity-60' : 'bg-blue-50/30 hover:bg-blue-50/50'}`}
+                                                    className={`p-4 border-b border-gray-50 cursor-pointer flex items-start gap-3 transition ${notif.isRead ? 'bg-white opacity-60' : 'bg-blue-50/30'}`}
                                                 >
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${notif.isRead ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 text-blue-600'}`}>
                                                         <Bell size={18} />
