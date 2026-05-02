@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 //const API_BASE_URL = 'https://localhost:7275/api';
-const API_BASE_URL = 'https://interacthub-f7fycybrcuf3cvfk.canadacentral-01.azurewebsites.net/api';
+const API_BASE_URL = 'https://interacthub-web-asescae8abb8bje4.southeastasia-01.azurewebsites.net/api';
 //const API_BASE_URL = 'https://congdanh2703-001-site1.stempurl.com/api';
 
 
