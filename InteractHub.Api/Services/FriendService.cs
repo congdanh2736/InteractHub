@@ -23,6 +23,8 @@ namespace InteractHub.Api.Services
         {
             _friendshipRepository = friendshipRepository;
             _userRepository = userRepository;
+            _notificationRepository = notificatinRepository;
+            _hubContext = hubContext;
         }
 
         public async Task<object?> SendFriendRequestAsync(string requesterId, string receiverId)
