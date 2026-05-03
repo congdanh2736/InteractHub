@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import * as React from 'react';
 
 // ham nay lam chot bao ve de kiem tra token
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {

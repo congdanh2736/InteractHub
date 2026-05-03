@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosClient from '../api/axiosClient';
 import { AxiosError } from 'axios';
+import * as React from 'react';
 
 export interface RegisterForm {
     email: string;

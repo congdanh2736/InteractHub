@@ -6,6 +6,7 @@ import axiosClient from '../api/axiosClient';
 import PostItem, { type PostType } from '../components/PostItem';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import * as React from 'react';
 
 export interface UserProfileInfo {
     id: string;

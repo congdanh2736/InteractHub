@@ -5,6 +5,7 @@ import axiosClient from '../api/axiosClient';
 import PostItem from '../components/PostItem';
 import type { PostType } from '../components/PostItem';
 import { useAuth } from '../context/AuthContext'; // 1. Bắt sóng Auth
+import * as React from 'react';
 
 export default function Profile() {
     const { user } = useAuth(); // 2. Lấy luôn thông tin User (đã giải mã sẵn ở Context)

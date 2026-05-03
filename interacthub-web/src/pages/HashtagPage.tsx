@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import PostItem from '../components/PostItem';
 import TrendingHashtags from '../components/TrendingHashtags';
 import { Hash, ArrowLeft } from 'lucide-react';
+import * as React from 'react';
 
 export default function HashtagPage() {
     const { tag } = useParams<{ tag: string }>(); // Ví dụ: lấy ra chữ "React" từ URL /hashtag/React

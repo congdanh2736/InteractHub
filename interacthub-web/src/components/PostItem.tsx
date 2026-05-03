@@ -10,7 +10,7 @@ export interface CommentType {
     id: number | string;
     userId: string;
     content: string;
-    userDisplayName?: string; // Thêm trường tên người dùng
+    userDisplayName?: string;
 }
 
 export interface PostType {

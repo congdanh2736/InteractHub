@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import axiosClient from '../api/axiosClient';
+import * as React from 'react';
 
 export interface StoryType {
     id: number;

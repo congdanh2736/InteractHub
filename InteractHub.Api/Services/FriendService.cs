@@ -80,7 +80,7 @@ namespace InteractHub.Api.Services
             };
         }
 
-        public async Task<object?> RespondToRequestAsync(string currentUserId, string requesterId, string status)
+        public async Task<object?>  RespondToRequestAsync(string currentUserId, string requesterId, string status)
         {
             var friendship = await _friendshipRepository.FindPendingAsync(currentUserId, requesterId);
             if (friendship is null) return null;

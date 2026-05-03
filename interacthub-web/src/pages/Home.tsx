@@ -9,6 +9,7 @@ import StoryList from '../components/StoryList';
 import TrendingHashtags from '../components/TrendingHashtags';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import * as React from 'react';
 
 export interface Comment {
     id: number;

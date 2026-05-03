@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axiosClient from '../api/axiosClient';
 import { TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import * as React from 'react';
 
 export interface HashtagType {
     id: number;

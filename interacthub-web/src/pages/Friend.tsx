@@ -4,6 +4,7 @@ import axiosClient from '../api/axiosClient';
 import { useAuth } from '../context/AuthContext';
 import { Users, UserPlus, Check, X } from 'lucide-react';
 import { toast } from 'react-toastify';
+import * as React from 'react';
 
 export interface FriendType {
     userId: string;
