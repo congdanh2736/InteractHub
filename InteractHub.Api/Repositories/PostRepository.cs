@@ -219,6 +219,13 @@ namespace InteractHub.Api.Repositories
                 .ToListAsync();
         }
 
+        public async Task<int> CountPostByUserIdAsync(string id)
+        {
+            return await _context.Posts
+                .Where(p => p.UserId == id)
+                .CountAsync();
+        } 
+
 
         public IQueryable<Post> GetQueryable()
         {

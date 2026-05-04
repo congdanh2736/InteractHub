@@ -32,8 +32,6 @@ export default function Login() {
                 password: data.password
             });
 
-            // GỌI HÀM LOGIN TỪ CONTEXT THAY VÌ TỰ SET LOCALSTORAGE
-            // Hàm này (đã viết trong AuthContext.tsx) sẽ tự động lưu token và giải mã thông tin user
             login(response.data.token);
 
             toast.success('Đăng nhập thành công! 🎉');

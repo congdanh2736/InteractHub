@@ -67,7 +67,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("https://interact-hub-self.vercel.app")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); // danh cho signalr
+            .AllowCredentials();
     });
 });
 

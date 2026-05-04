@@ -11,6 +11,7 @@ import Friend from './pages/Friend';
 import UserProfile from './pages/UserProfile';
 import HashtagPage from './pages/HashtagPage';
 import AdminPage from './pages/AdminPage';
+import * as React from 'react';
 
 function App() {
     return (
@@ -18,11 +19,9 @@ function App() {
             <ToastContainer position="top-right" autoClose={3000} />
             <AuthProvider>
                 <Routes>
-                    {/* nhung trang ma ai cung co the vao duoc */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
 
-                    {/* nhung trang bat buoc phai dang nhap moi vao dc */}
                     <Route
                         path="/friends"
                         element={

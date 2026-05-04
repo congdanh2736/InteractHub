@@ -91,13 +91,11 @@ namespace InteractHub.Api.Controllers
             });
         }
 
-        // ĐỔI THÀNH async để lấy danh sách role của user
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            // Lấy role hiện tại của user
             var roles = await _userManager.GetRolesAsync(user);
 
             var claims = new List<Claim>
@@ -105,11 +103,10 @@ namespace InteractHub.Api.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email!),
                 new Claim("DisplayName", user.DisplayName ?? string.Empty),
-                new Claim(ClaimTypes.NameIdentifier, user.Id), // thêm để controller đọc userId ổn định
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Email, user.Email!)
             };
 
-            // Gắn role vào token
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));

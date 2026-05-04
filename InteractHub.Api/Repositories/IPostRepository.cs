@@ -13,6 +13,7 @@ namespace InteractHub.Api.Repositories
         Task<bool> DeleteAsync(int id);
         Task<int> CountAsync(string? keyword);
         Task<int> CountUserAsync(string id);
+        Task<int> CountPostByUserIdAsync(string id);
 
         Task<PostDetailResponse?> GetPostsByUserIdAndIdAsync(int id, string? userId);
         Task<IEnumerable<PostDetailResponse>> GetPostsByUserIdAsync(string userId, string? currentUserId, int pageNumber, int pageSize);

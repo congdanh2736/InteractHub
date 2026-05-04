@@ -9,7 +9,6 @@ namespace InteractHub.Api.Services
 {
     public class PostService : IPostService
     {
-        // 1. KHÔNG DÙNG ApplicationDbContext NỮA, CHUYỂN SANG DÙNG IPostRepository
         private readonly IPostRepository _postRepository;
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly IHashtagService _hashtagService;
@@ -80,10 +79,7 @@ namespace InteractHub.Api.Services
 
         public async Task<object> GetPostsByUserIdAsync(string userId, string? currentUserId, int pageNumber, int pageSize)
         {
-            var totalItems = await _postRepository
-                .GetQueryable()
-                .Where(p => p.UserId == userId)
-                .CountAsync();
+            var totalItems = await _postRepository.CountPostByUserIdAsync(userId);
 
             var posts = _postRepository.GetPostsByUserIdAsync(userId, currentUserId, pageNumber, pageSize);
 
